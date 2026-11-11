@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 - 机房维护系统</title>
+<style>
+  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+       background:#1f2d3d;font-family:"Microsoft YaHei",system-ui,sans-serif}
+  .card{background:#fff;border-radius:10px;padding:36px 44px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+  h1{font-size:20px;margin:0 0 6px;color:#243447}
+  .sub{color:#8a97a5;font-size:13px;margin-bottom:22px}
+  input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #ccd5df;
+        border-radius:6px;font-size:15px;outline:none;margin-bottom:14px}
+  input:focus{border-color:#3d7fff}
+  button{width:100%;padding:10px;border:0;border-radius:6px;background:#3d7fff;color:#fff;
+         font-size:15px;cursor:pointer}
+  button:hover{background:#2f6fe0}
+  .err{color:#e04b4b;font-size:13px;margin:-6px 0 12px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>机房维护系统</h1>
+  <div class="sub">请输入管理密码登录（config.json 中的 admin_password）</div>
+  {% if err %}<div class="err">{{ err }}</div>{% endif %}
+  <form method="post">
+    <input type="password" name="password" placeholder="管理密码" autofocus>
+    <button type="submit">登 录</button>
+  </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[2026-11-09 20:15:51] info: cid=bj2-qingyan-agent-v9-04a75b48 host=bj2-qingyan-agent-v9 user=z os=Linux-5.10.134-18.0.13.lifsea8.x86_64-x86_64-with-glibc2.41 priv=0 caps=noscreen
+[2026-11-09 20:15:51] MRMS python client 1.0 started cid=bj2-qingyan-agent-v9-04a75b48 server=http://127.0.0.1:3309
+[2026-11-09 20:15:51] poll failed #1: URLError(ConnectionRefusedError(111, 'Connection refused'))
+[2026-11-09 20:15:55] poll failed #2: URLError(ConnectionRefusedError(111, 'Connection refused'))

@@ -1,0 +1,11 @@
+{
+  "server_ip": "192.168.1.123",
+  "port": 5309,
+  "listen_host": "0.0.0.0",
+  "admin_password": "mrcs123456",
+  "client_token": "MRCS-2026-DEFAULT-TOKEN",
+  "poll_interval": 5.0,
+  "view_interval": 0.4,
+  "cmd_timeout": 120,
+  "_secret": "48a7f7b33f3bf5210a35724040338e7c520dc9b9d6366320"
+}

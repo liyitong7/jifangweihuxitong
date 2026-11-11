@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>机房维护系统</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 "Microsoft YaHei",system-ui,sans-serif;background:#eef1f5;color:#2b3542}
+  .top{height:52px;background:#1f2d3d;color:#fff;display:flex;align-items:center;padding:0 20px;gap:14px}
+  .logo{font-size:17px;font-weight:600;letter-spacing:1px}
+  .muted{color:#93a3b5;font-size:12px}
+  .flex{flex:1}
+  .top a{color:#c6d2df;text-decoration:none;font-size:13px}
+  .top a:hover{color:#fff}
+  .wrap{display:flex;gap:14px;padding:14px;height:calc(100vh - 52px)}
+  .panel{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:auto}
+  .left{flex:1.25;min-width:560px;display:flex;flex-direction:column}
+  .right{flex:1;min-width:520px;display:flex;flex-direction:column}
+  .panel-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #e8edf3;position:sticky;top:0;background:#fff;z-index:2}
+  .panel-h b{font-size:15px}
+  .tblwrap{overflow:auto;flex:1}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{position:sticky;top:0;background:#f6f8fb;color:#5b6b7c;font-weight:600;text-align:left;
+     padding:8px 10px;border-bottom:1px solid #e8edf3;white-space:nowrap}
+  td{padding:8px 10px;border-bottom:1px solid #f0f3f7;white-space:nowrap;vertical-align:middle}
+  tr.row{cursor:pointer}
+  tr.row:hover{background:#f5f9ff}
+  tr.sel{background:#e8f1ff}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+  .on{background:#2ecc71}.off{background:#c3ccd6}
+  .tag{display:inline-block;padding:1px 8px;border-radius:9px;font-size:12px}
+  .tag-adm{background:#e5f5ea;color:#1e8e4e}
+  .tag-usr{background:#f0f2f5;color:#7c8794}
+  .tag-view{background:#fff4e0;color:#b57c00}
+  button{padding:5px 12px;border:0;border-radius:5px;background:#3d7fff;color:#fff;font-size:12.5px;cursor:pointer}
+  button:hover{background:#2f6fe0}
+  button.gray{background:#8a97a5}.gray:hover{background:#74818f}
+  button.danger{background:#e04b4b}.danger:hover{background:#c73e3e}
+  button.ghost{background:#eef2f7;color:#3d4a5a}
+  button:disabled{opacity:.5;cursor:default}
+  input[type=text],textarea,select{padding:6px 9px;border:1px solid #ccd5df;border-radius:5px;
+     font-size:13px;outline:none;font-family:inherit}
+  input:focus,textarea:focus,select:focus{border-color:#3d7fff}
+  .body{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;flex:1}
+  .empty{color:#98a4b1;padding:60px 0;text-align:center;font-size:14px}
+  #chead{padding:12px 14px;background:#f6f9fd;border-bottom:1px solid #e8edf3}
+  #chead b{font-size:15px}
+  .tabs{display:flex;border-bottom:1px solid #e8edf3}
+  .tab{padding:10px 20px;cursor:pointer;color:#67788b;border-bottom:2px solid transparent}
+  .tab.active{color:#1f2d3d;font-weight:600;border-bottom-color:#3d7fff}
+  .frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .grow{flex:1}
+  textarea{width:100%;min-height:64px;resize:vertical}
+  #out{background:#101620;color:#d5e2f0;border-radius:6px;padding:10px 12px;font:12.5px/1.55 Consolas,monospace;
+       white-space:pre-wrap;word-break:break-all;min-height:110px;max-height:300px;overflow:auto}
+  .hist{font-size:12.5px}
+  .hist .h{display:flex;gap:8px;padding:5px 8px;border-radius:5px;cursor:pointer;color:#4a5a6d}
+  .hist .h:hover{background:#f0f5fd}
+  .hist .h .c{font-family:Consolas,monospace;color:#2b3542;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .screenbox{background:#101620;border-radius:6px;display:flex;align-items:center;justify-content:center;
+             min-height:320px;position:relative;overflow:auto}
+  .screenbox img{max-width:100%;max-height:70vh;display:block;cursor:crosshair;user-select:none}
+  .screenbox .placeholder{color:#5c6b7d;font-size:13px}
+  .keys{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .keys button{padding:5px 10px}
+  #keytext{flex:1;min-width:160px}
+  /* 键盘直通：画面获得焦点时显示蓝色边框 */
+  #scr:focus{outline:3px solid #3d7fff;outline-offset:-3px}
+  /* 全屏模式 */
+  #fswrap:fullscreen{background:#000;display:flex;flex-direction:column;padding:0}
+  #fswrap:-webkit-full-screen{background:#000;display:flex;flex-direction:column;padding:0}
+  #fswrap:fullscreen .screenbox{flex:1;min-height:0;background:#000;border-radius:0;overflow:hidden;
+                                display:flex;align-items:center;justify-content:center}
+  #fswrap:-webkit-full-screen .screenbox{flex:1;min-height:0;background:#000;border-radius:0;overflow:hidden;
+                                display:flex;align-items:center;justify-content:center}
+  #fswrap:fullscreen .screenbox img,
+  #fswrap:-webkit-full-screen .screenbox img{max-width:100vw;max-height:calc(100vh - 56px);width:auto;height:auto}
+  #fswrap:fullscreen .keys,
+  #fswrap:-webkit-full-screen .keys{background:#101620;padding:8px 12px;margin:0;border-radius:0}
+  #fswrap:fullscreen .keys #keytext,
+  #fswrap:-webkit-full-screen .keys #keytext{max-width:280px}
+  .stat-ok{color:#1e8e4e}.stat-bad{color:#e04b4b}
+  .sec{color:#5b6b7c;font-size:12.5px;font-weight:600;margin-top:2px}
+  code.k{background:#eef2f7;border-radius:4px;padding:0 5px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">机房维护系统</div>
+  <div class="muted" id="srv" data-srv="{{ srv }}">服务端 {{ srv }}</div>
+  <div class="flex"></div>
+  <div class="muted" id="conn"></div>
+  <a href="/logout">退出登录</a>
+</div>
+<div class="wrap">
+
+  <div class="panel left">
+    <div class="panel-h">
+      <b>客户端列表</b><span class="muted" id="cnt"></span>
+      <div class="flex"></div>
+      <input type="text" id="q" placeholder="搜索 主机 / IP / 用户" style="width:170px">
+      <button class="ghost" onclick="refreshClients(true)">刷新</button>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr>
+          <th>状态</th><th>主机名</th><th>IP 地址</th><th>操作系统</th><th>用户名</th>
+          <th>权限</th><th>分辨率</th><th>最后在线</th><th>操作</th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="9" class="empty">加载中…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel right">
+    <div id="empty" class="empty">← 请在左侧选择一个客户端</div>
+    <div id="detail" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div id="chead"></div>
+      <div class="tabs">
+        <div class="tab active" data-t="cmd" onclick="switchTab('cmd')">远程命令</div>
+        <div class="tab" data-t="screen" onclick="switchTab('screen')">屏幕控制</div>
+        <div class="tab" data-t="power" onclick="switchTab('power')">电源</div>
+      </div>
+
+      <!-- 远程命令 -->
+      <div class="body" id="tab-cmd">
+        <div class="sec">常用命令（sql.txt，每行一条）</div>
+        <div class="frow">
+          <select id="sqlsel" style="flex:1;max-width:420px"></select>
+          <button onclick="runSqlSel()">执行选中</button>
+        </div>
+        <div class="sec">自定义命令（以 cmd /c 方式在客户端执行）</div>
+        <textarea id="cmdin" placeholder="例如：ipconfig /all&#10;net user&#10;shutdown /r /t 5"></textarea>
+        <div class="frow">
+          <button id="runbtn" onclick="runCmd()">执 行</button>
+          <span id="cmdstat" class="muted"></span>
+        </div>
+        <div class="sec">执行输出</div>
+        <div id="out">（等待执行）</div>
+        <div class="sec">最近执行（点击回填）</div>
+        <div class="hist" id="hist"></div>
+      </div>
+
+      <!-- 屏幕控制 -->
+      <div class="body" id="tab-screen" style="display:none">
+        <div class="frow">
+          <button id="vwbtn" onclick="toggleView()">开始观看</button>
+          <span id="vwstat" class="muted"></span>
+          <div class="flex"></div>
+          <button id="fsbtn" class="ghost" onclick="toggleFs()">全屏画面</button>
+        </div>
+        <div class="muted">鼠标在画面上移动/单击/双击/右键 = 远程鼠标；<b>按住左键拖动可拖拽窗口、框选文字</b>（可拖出画面边缘）。点击画面后直接敲键盘也会发送到远程（蓝色边框=已聚焦）。</div>
+        <div id="fswrap">
+          <div class="screenbox">
+            <img id="scr" alt="" draggable="false" tabindex="0" style="display:none">
+            <div class="placeholder" id="scrph">未开始观看</div>
+          </div>
+          <div class="keys">
+            <input type="text" id="keytext" placeholder="要输入的文本（支持中文）" onkeydown="if(event.key==='Enter'){sendKeyText()}">
+            <button onclick="sendKeyText()">发送文本</button>
+            <button onclick="sendSkey('enter')">Enter</button>
+            <button onclick="sendSkey('esc')">Esc</button>
+            <button onclick="sendSkey('tab')">Tab</button>
+            <button onclick="sendSkey('bksp')">Backspace</button>
+            <button onclick="sendSkey('del')">Delete</button>
+            <button onclick="sendSkey('up')">↑</button>
+            <button onclick="sendSkey('down')">↓</button>
+            <button onclick="sendSkey('left')">←</button>
+            <button onclick="sendSkey('right')">→</button>
+            <button onclick="sendSkey('home')">Home</button>
+            <button onclick="sendSkey('end')">End</button>
+            <button onclick="sendSkey('win')">Win</button>
+            <button onclick="sendSkey('ctrl+c')">Ctrl+C</button>
+            <button onclick="sendSkey('alt+f4')">Alt+F4</button>
+            <button id="fsbtn2" class="ghost" onclick="toggleFs()">全屏</button>
+          </div>
+        </div>
+        <div class="muted">提示：中文建议用上方文本框发送（键盘直通不支持输入法组合键）；Ctrl+Alt+Del 属于系统安全按键序列，无法远程发送。</div>
+      </div>
+
+      <!-- 电源 -->
+      <div class="body" id="tab-power" style="display:none">
+        <div class="sec">电源操作</div>
+        <div class="frow">
+          <button class="danger" onclick="power('reboot')">重启计算机</button>
+          <button class="gray"  onclick="power('shutdown')">关闭计算机</button>
+        </div>
+        <div class="muted">重启/关机为强制方式（EWX_FORCE），不会等待程序保存数据。已下发后无法撤销。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const IMG = document.getElementById('scr');
+let cur = null;              // 当前选中客户端
+let clients = [];            // 客户端缓存
+let viewing = false;         // 是否正在观看屏幕
+let frameUrl = null;
+let dragging = false;        // 左键按住中（拖动窗口/框选）
+let lastMove = 0;
+let pollTimer = null;
+
+/* ---------------- 基础请求 ---------------- */
+async function api(path, opt) {
+  const r = await fetch(path, opt);
+  if (r.status === 401) { location.href = '/login'; throw new Error('unauthorized'); }
+  return r;
+}
+async function apiJson(path, method, body) {
+  const r = await api(path, {method: method || 'GET',
+    headers: body ? {'Content-Type': 'application/json'} : undefined,
+    body: body ? JSON.stringify(body) : undefined});
+  return r.json();
+}
+
+/* ---------------- 客户端列表 ---------------- */
+async function refreshClients(manual) {
+  let d;
+  try { d = await apiJson('/api/clients'); }
+  catch (e) { document.getElementById('conn').textContent = '服务端连接失败'; return; }
+  document.getElementById('conn').textContent = '';
+  clients = d.clients;
+  const kw = document.getElementById('q').value.trim().toLowerCase();
+  const tb = document.getElementById('tbody');
+  tb.textContent = '';
+  if (!clients.length) {
+    tb.innerHTML = '<tr><td colspan="9" class="empty">暂无客户端上报，等待客户端轮询…</td></tr>';
+  }
+  let shown = 0;
+  for (const c of clients) {
+    if (kw && !((c.host + ' ' + c.ip + ' ' + c.user).toLowerCase().includes(kw))) continue;
+    shown++;
+    const tr = document.createElement('tr');
+    tr.className = 'row' + (cur === c.cid ? ' sel' : '');
+    tr.onclick = () => selectClient(c.cid);
+    const td = (txt, cls) => { const t = document.createElement('td'); if (cls) t.className = cls; t.textContent = txt == null ? '' : String(txt); return t; };
+    // 状态
+    const st = document.createElement('td');
+    const dot = document.createElement('span'); dot.className = 'dot ' + (c.online ? 'on' : 'off');
+    st.appendChild(dot); st.appendChild(document.createTextNode(c.online ? '在线' : '离线'));
+    tr.appendChild(st);
+    tr.appendChild(td(c.host));
+    tr.appendChild(td(c.ip));
+    tr.appendChild(td(c.os + (c.arch ? ' / ' + c.arch : '')));
+    tr.appendChild(td(c.user));
+    const pr = document.createElement('td');
+    const tag = document.createElement('span');
+    tag.className = 'tag ' + (c.priv === '1' ? 'tag-adm' : 'tag-usr');
+    tag.textContent = c.priv === '1' ? '管理员' : '普通';
+    pr.appendChild(tag);
+    if (c.viewing) { const v = document.createElement('span'); v.className = 'tag tag-view'; v.textContent = '观看中'; pr.appendChild(v); }
+    tr.appendChild(pr);
+    tr.appendChild(td((c.sw | 0) + 'x' + (c.sh | 0)));
+    tr.appendChild(td(ago(c.last_seen, d.now)));
+    const op = document.createElement('td');
+    const mk = (txt, fn, cls) => { const b = document.createElement('button'); b.textContent = txt; if (cls) b.className = cls; b.onclick = (e) => { e.stopPropagation(); fn(); }; return b; };
+    op.appendChild(mk('屏幕', () => { selectClient(c.cid, 'screen'); }));
+    op.appendChild(mk('命令', () => { selectClient(c.cid, 'cmd'); }));
+    tr.appendChild(op);
+    tb.appendChild(tr);
+  }
+  if (clients.length && !shown) {
+    tb.innerHTML = '<tr><td colspan="9" class="empty">无匹配结果</td></tr>';
+  }
+  document.getElementById('cnt').textContent =
+      clients.length ? `（在线 ${clients.filter(c => c.online).length} / 共 ${clients.length}）` : '';
+}
+function ago(ts, now) {
+  if (!ts) return '-';
+  const s = Math.max(0, Math.round(now - ts));
+  if (s < 60) return s + ' 秒前';
+  if (s < 3600) return Math.round(s / 60) + ' 分钟前';
+  return Math.round(s / 3600) + ' 小时前';
+}
+document.getElementById('q').addEventListener('input', () => refreshClients());
+
+/* ---------------- 选中客户端 ---------------- */
+function findCur() { return clients.find(c => c.cid === cur); }
+function selectClient(cid, tab) {
+  if (cur !== cid) {
+    if (viewing) stopView();          // 切换客户端先停掉观看
+    cur = cid;
+  }
+  document.getElementById('empty').style.display = 'none';
+  document.getElementById('detail').style.display = 'flex';
+  renderHead();
+  refreshHistory();
+  if (tab) switchTab(tab);
+  refreshClients();
+}
+function renderHead() {
+  const c = findCur(); if (!c) return;
+  const h = document.getElementById('chead');
+  h.textContent = '';
+  const b = document.createElement('b'); b.textContent = c.host; h.appendChild(b);
+  const m = document.createElement('span'); m.className = 'muted';
+  m.textContent = `　${c.ip}　·　${c.user}　·　${c.os}　·　${(c.priv === '1') ? '管理员' : '普通权限'}　·　${c.sw}x${c.sh}`;
+  h.appendChild(m);
+}
+
+/* ---------------- 页签 ---------------- */
+function switchTab(t) {
+  for (const el of document.querySelectorAll('.tab')) el.classList.toggle('active', el.dataset.t === t);
+  document.getElementById('tab-cmd').style.display = t === 'cmd' ? 'flex' : 'none';
+  document.getElementById('tab-screen').style.display = t === 'screen' ? 'flex' : 'none';
+  document.getElementById('tab-power').style.display = t === 'power' ? 'flex' : 'none';
+  if (t === 'screen') loadSql(); // 顺带刷新
+  if (t !== 'screen' && viewing) stopView();
+}
+
+/* ---------------- 远程命令 ---------------- */
+async function loadSql() {
+  const d = await apiJson('/api/commands');
+  const sel = document.getElementById('sqlsel');
+  sel.textContent = '';
+  if (!d.cmds || !d.cmds.length) {
+    const o = document.createElement('option'); o.textContent = '（sql.txt 为空）'; o.value = ''; sel.appendChild(o);
+    return;
+  }
+  for (const c of d.cmds) {
+    const o = document.createElement('option');
+    o.value = c;
+    o.textContent = c.length > 70 ? c.slice(0, 70) + '…' : c;
+    o.title = c;
+    sel.appendChild(o);
+  }
+  sel.onchange = () => { document.getElementById('cmdin').value = sel.value; };
+}
+function runSqlSel() {
+  const sel = document.getElementById('sqlsel');
+  if (sel.value) runCmdText(sel.value);
+}
+function runCmd() {
+  const t = document.getElementById('cmdin').value.trim();
+  if (t) runCmdText(t);
+}
+async function runCmdText(cmd) {
+  if (!cur) return;
+  const stat = document.getElementById('cmdstat');
+  const out = document.getElementById('out');
+  document.getElementById('runbtn').disabled = true;
+  stat.textContent = '已下发，等待客户端执行…'; stat.className = 'muted';
+  out.textContent = '（执行中：' + cmd + '）';
+  try {
+    const d = await apiJson('/api/exec', 'POST', {cid: cur, cmd: cmd});
+    if (!d.ok) { stat.textContent = '下发失败：' + (d.err || ''); stat.className = 'stat-bad'; return; }
+    const t0 = Date.now();
+    pollTimer = setInterval(async () => {
+      let r;
+      try { r = await apiJson('/api/result?id=' + encodeURIComponent(d.id)); } catch (e) { return; }
+      if (!r.ok || !r.done) {
+        if (Date.now() - t0 > 130000) {
+          clearInterval(pollTimer); stat.textContent = '等待超时（客户端离线或命令未执行）'; stat.className = 'stat-bad';
+          document.getElementById('runbtn').disabled = false;
+        }
+        return;
+      }
+      clearInterval(pollTimer);
+      out.textContent = (r.output || '') + (r.output ? '' : '(无输出)');
+      out.scrollTop = out.scrollHeight;
+      stat.textContent = `完成，退出码 ${r.code}，用时 ${Math.round((Date.now() - t0) / 1000)} 秒`;
+      stat.className = r.code === 0 ? 'stat-ok' : 'stat-bad';
+      document.getElementById('runbtn').disabled = false;
+      refreshHistory();
+    }, 800);
+  } finally {
+    document.getElementById('runbtn').disabled = false;
+  }
+}
+async function refreshHistory() {
+  if (!cur) return;
+  const d = await apiJson('/api/history?cid=' + encodeURIComponent(cur));
+  const h = document.getElementById('hist');
+  h.textContent = '';
+  if (!d.items || !d.items.length) { h.innerHTML = '<span class="muted">（暂无记录）</span>'; return; }
+  for (const it of d.items.slice(0, 10)) {
+    const div = document.createElement('div');
+    div.className = 'h';
+    const t = document.createElement('span'); t.className = 'muted';
+    t.textContent = new Date(it.ts * 1000).toLocaleTimeString();
+    const c = document.createElement('span'); c.className = 'c'; c.textContent = it.cmd; c.title = it.cmd;
+    const o = document.createElement('span');
+    o.className = 'muted'; o.textContent = it.code === 0 ? '✓' : '✗(' + it.code + ')';
+    div.appendChild(t); div.appendChild(c); div.appendChild(o);
+    div.onclick = () => { document.getElementById('cmdin').value = it.cmd; };
+    h.appendChild(div);
+  }
+}
+
+/* ---------------- 屏幕控制 ---------------- */
+function toggleView() { viewing ? stopView() : startView(); }
+async function startView() {
+  if (!cur) return;
+  await apiJson('/api/view', 'POST', {cid: cur, on: true});
+  viewing = true;
+  document.getElementById('vwbtn').textContent = '停止观看';
+  document.getElementById('vwstat').textContent = '已连接，等待画面…';
+  loopFrame();
+}
+async function stopView() {
+  viewing = false;
+  clearInterval(pollTimer); pollTimer = null;
+  document.getElementById('vwbtn').textContent = '开始观看';
+  document.getElementById('vwstat').textContent = '';
+  document.getElementById('scr').style.display = 'none';
+  document.getElementById('scrph').textContent = '未开始观看';
+  document.getElementById('scrph').style.display = '';
+  try { await apiJson('/api/view', 'POST', {cid: cur, on: false}); } catch (e) {}
+}
+async function loopFrame() {
+  if (!viewing || !cur) return;
+  try {
+    const r = await api('/api/frame?cid=' + encodeURIComponent(cur) + '&t=' + Date.now(), {cache: 'no-store'});
+    if (r.ok) {
+      const blob = await r.blob();
+      if (frameUrl) URL.revokeObjectURL(frameUrl);
+      frameUrl = URL.createObjectURL(blob);
+      IMG.src = frameUrl;
+      IMG.style.display = '';
+      document.getElementById('scrph').style.display = 'none';
+      document.getElementById('vwstat').textContent = '画面刷新中';
+    } else {
+      document.getElementById('vwstat').textContent = '等待画面…';
+    }
+  } catch (e) {}
+  setTimeout(loopFrame, 300);
+}
+// 显示画面实际尺寸（应与列表中的分辨率一致；不一致说明客户端截图有问题）
+IMG.onload = () => {
+  const s = document.getElementById('vwstat');
+  if (IMG.naturalWidth) {
+    s.textContent = '画面 ' + IMG.naturalWidth + 'x' + IMG.naturalHeight +
+                    '（应等于该机分辨率）';
+  }
+};
+function xy(e) {
+  const r = IMG.getBoundingClientRect();
+  const clamp = v => Math.min(10000, Math.max(0, Math.round(v)));
+  return {nx: clamp((e.clientX - r.left) / r.width * 10000),
+          ny: clamp((e.clientY - r.top) / r.height * 10000)};
+}
+IMG.addEventListener('mousemove', e => {
+  const now = Date.now();
+  const gap = dragging ? 60 : 120;                  // 拖动时提高采样率
+  if (now - lastMove < gap) return;
+  lastMove = now;
+  const p = xy(e);
+  apiJson('/api/input', 'POST', {cid: cur, kind: 'mouse', nx: p.nx, ny: p.ny, action: 'move'});
+});
+IMG.addEventListener('mousedown', e => {
+  IMG.focus();                                      // 键盘直通：点击画面后获得焦点
+  e.preventDefault();
+  const p = xy(e);
+  if (e.button === 0) {                             // 左键按下：立即发送"按住"
+    dragging = true;
+    sendMouse(p.nx, p.ny, 'ldown');
+  } else if (e.button === 2) {
+    sendMouse(p.nx, p.ny, 'right');
+  }
+});
+document.addEventListener('mouseup', e => {        // 抬起在 document 上监听，移出画面也能松开
+  if (!dragging) return;
+  dragging = false;
+  const p = xy(e);
+  sendMouse(p.nx, p.ny, 'lup');
+});
+IMG.addEventListener('contextmenu', e => e.preventDefault());
+function sendMouse(nx, ny, action) {
+  if (!cur) return;
+  apiJson('/api/input', 'POST', {cid: cur, kind: 'mouse', nx: nx, ny: ny, action: action});
+}
+function sendKeyText() {
+  const t = document.getElementById('keytext').value;
+  if (!t || !cur) return;
+  apiJson('/api/input', 'POST', {cid: cur, kind: 'key', text: t});
+  document.getElementById('keytext').value = '';
+}
+function sendSkey(name) {
+  if (!cur) return;
+  apiJson('/api/input', 'POST', {cid: cur, kind: 'skey', name: name});
+}
+
+/* ---------------- 键盘直通（画面聚焦时物理键盘直接发送远程） ---------------- */
+const KEYMAP = {Enter: 'enter', Escape: 'esc', Tab: 'tab', Backspace: 'bksp',
+                Delete: 'del', Insert: 'ins', Home: 'home', End: 'end',
+                PageUp: 'pgup', PageDown: 'pgdn', ArrowUp: 'up',
+                ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right'};
+IMG.addEventListener('keydown', e => {
+  if (!viewing || !cur) return;
+  e.preventDefault();
+  const k = e.key;
+  if (k === 'Process' || k === 'Dead' || k === 'Unidentified') return;  // 输入法等
+  const MODS = ['Shift', 'Control', 'Alt', 'Meta'];
+  if (MODS.includes(k)) return;                 // 单按修饰键：等待组合
+  const mods = [];
+  if (e.ctrlKey)  mods.push('ctrl');
+  if (e.altKey)   mods.push('alt');
+  if (e.metaKey)  mods.push('win');
+  if (e.shiftKey) mods.push('shift');
+  let special = KEYMAP[k] || (/^F([1-9]|1[0-2])$/.test(k) ? k.toLowerCase() : null);
+  if (k === ' ') special = 'space';
+  if (special) {
+    // shift 修饰对方向/功能键有意义（如 shift+tab），一并下发
+    sendSkey(mods.concat(special).join('+'));
+    return;
+  }
+  if (k.length === 1) {
+    if (mods.filter(m => m !== 'shift').length) {
+      // ctrl/alt/win 组合：按组合键序列发送（如 ctrl+c）
+      sendSkey(mods.concat(k.toLowerCase()).join('+'));
+    } else {
+      // 普通字符（shift 已体现在大写/符号上），按文本发送，支持中文所在码位
+      apiJson('/api/input', 'POST', {cid: cur, kind: 'key', text: k});
+    }
+  }
+});
+
+/* ---------------- 全屏 ---------------- */
+function toggleFs() {
+  const el = document.getElementById('fswrap');
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    (el.requestFullscreen || el.webkitRequestFullscreen).call(el)
+      .then(() => { if (IMG.style.display !== 'none') IMG.focus(); })
+      .catch(() => {});
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  }
+}
+document.addEventListener('fullscreenchange', () => {
+  const fs = !!document.fullscreenElement;
+  document.getElementById('fsbtn').textContent = fs ? '退出全屏' : '全屏画面';
+  const b2 = document.getElementById('fsbtn2');
+  if (b2) b2.textContent = fs ? '退出全屏' : '全屏';
+  if (fs && IMG.style.display !== 'none') IMG.focus();
+});
+
+/* ---------------- 电源 ---------------- */
+async function power(action) {
+  const c = findCur(); if (!c) return;
+  const label = action === 'reboot' ? '重启' : '关机';
+  if (!confirm(`确定要对 ${c.host}（${c.ip}）执行【${label}】吗？`)) return;
+  const d = await apiJson('/api/power', 'POST', {cid: cur, action: action});
+  if (d.ok) { alert('已下发' + label + '指令'); refreshHistory(); }
+  else alert('下发失败：' + (d.err || ''));
+}
+
+/* ---------------- 启动 ---------------- */
+loadSql();
+refreshClients();
+setInterval(refreshClients, 3000);
+</script>
+</body>
+</html>
