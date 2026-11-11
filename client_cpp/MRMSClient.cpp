@@ -468,7 +468,7 @@ static void make_cid() {
     while (!id.empty() && (id.back() == '\n' || id.back() == '\r' || id.back() == ' ')) id.pop_back();
     if (id.size() != 8) {
         unsigned rnd = (unsigned)GetTickCount() ^ GetCurrentProcessId();
-        HCRYPTPROV hc = NULL;
+        HCRYPTPROV hc = 0;
         if (CryptAcquireContextW(&hc, NULL, NULL, PROV_RSA_FULL,
                                  CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
             CryptGenRandom(hc, 4, (BYTE *)&rnd);
@@ -605,7 +605,7 @@ static bool capture_jpeg(int quality, std::string &jpeg) {
                 Gdiplus::EncoderParameters ep;
                 ep.Count = 1;
                 ep.Parameter[0].Guid = kEncoderQualityGuid;
-                ep.Parameter[0].Type = EncoderParameterValueTypeLong;
+                ep.Parameter[0].Type = Gdiplus::EncoderParameterValueTypeLong;
                 ep.Parameter[0].NumberOfValues = 1;
                 ep.Parameter[0].Value = &q;
                 if (bmp.Save(st, &enc, &ep) == Gdiplus::Ok) {
