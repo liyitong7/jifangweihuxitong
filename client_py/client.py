@@ -15,7 +15,7 @@
   python  client.py            前台运行（调试）
   python  client.py --install  仅写入自启动后退出
 命令行参数可覆盖 client_config.json：
-  --server http://10.100.4.111:3309
+  --server http://10.100.4.111:5309
   --token MRCS-2026-DEFAULT-TOKEN
   --once   只执行一轮轮询（测试用）
 """
