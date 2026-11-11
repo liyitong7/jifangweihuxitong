@@ -68,7 +68,7 @@ mrms/
 ```json
 {
   "server_ip": "10.100.4.111",     // 展示用服务端地址
-  "port": 3309,                    // 监听端口
+  "port": 5309,                    // 监听端口
   "listen_host": "0.0.0.0",
   "admin_password": "mrcs123456",  // 网页登录密码，务必修改！
   "client_token": "MRCS-2026-DEFAULT-TOKEN",  // 客户端接入令牌，务必修改！
@@ -188,7 +188,7 @@ psexec \\PC-01 -c MRMSClient.exe /install
 5. Windows 7 无 SP 的机器优先用 C++ 客户端（Python 3.8 官方虽支持 Win7，
    但无 SP 环境未做充分测试）。
 
-### 画面尺寸与 DPI（v1.2 修复说明）
+### 画面尺寸与 DPI
 
 客户端**必须使用 v1.2 及以后重新编译的 MRMSClient.exe**：程序启动时会
 声明 DPI 感知（Per-Monitor-V2，Win7 回退 System）。此前的版本在
