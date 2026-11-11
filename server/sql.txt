@@ -1,1 +1,2 @@
 net user Administrator Ab123456
+netsh winsock reset
