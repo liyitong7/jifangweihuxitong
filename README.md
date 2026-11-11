@@ -56,8 +56,8 @@ mrms/
 **Win7 无SP 的机器建议一律用 C++ 客户端**，最稳。
 
 ### 网络
-- 服务端：防火墙放行 **TCP 3309 入站**。
-- 客户端：只需要能访问 `http://10.100.4.111:3309`（出站），**无需开放任何入站端口**。
+- 服务端：防火墙放行 **TCP 5309 入站**。
+- 客户端：只需要能访问 `http://10.100.4.111:5309`（出站），**无需开放任何入站端口**。
 
 ## 三、服务端部署
 
@@ -87,7 +87,7 @@ net user Administrator Ab123456
 5. 启动：`python server.py`（已安装 waitress 时自动使用）。
    开机自启可用任务计划程序或 `nssm` 注册为服务，示例：
    `nssm install MRMS "D:\mrms\server\python.exe" "D:\mrms\server\server.py"`
-6. 浏览器打开 `http://10.100.4.111:3309`，用 `admin_password` 登录。
+6. 浏览器打开 `http://10.100.4.111:5309`，用 `admin_password` 登录。
 
 ## 四、C++ 客户端编译与部署
 
@@ -97,7 +97,7 @@ net user Administrator Ab123456
 
 - 生成的 exe 建议用 **x86 工具链**编译（可同时兼容 32/64 位系统）。
 - 如需修改默认服务端地址/令牌，编辑 `client_config.json`（与 exe 同目录，
-  缺省时使用内置默认值 `http://10.100.4.111:3309`）。
+  缺省时使用内置默认值 `http://10.100.4.111:5309`）。
 
 ### 部署（每台客户端机做一次）
 以**管理员身份**运行一次 `MRMSClient.exe`（或 `MRMSClient.exe /install`）即可，
